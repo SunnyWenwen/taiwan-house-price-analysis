@@ -7,9 +7,23 @@ import os
 import numpy as np
 
 
-def read_merge_rename(house_price_data_path, start_year=101, city_code_filter=[]):
+def preprocess_house_price_data(house_price_data_path, result_path, start_year: int = 101, city_code_filter=[]):
+    """
+
+    :param house_price_data_path:
+    :param result_path:
+    :param start_year:
+    :param city_code_filter: city code, mapping table can see 'doc/縣市代碼'
+    Example
+        []: all city
+        ['o','j']: 新竹市+新竹縣
+    :return: write data to result_path
+    """
+
     # settable parameter
     # house_price_data_path = "data\\house_price_xls\\"
+    if not os.path.isdir(result_path):
+        os.makedirs(result_path, exist_ok=True)
 
     year_list = list(str(x) for x in range(start_year, datetime.datetime.today().year - 1910))
     # city_code_filter = ['o']
@@ -124,4 +138,5 @@ def read_merge_rename(house_price_data_path, start_year=101, city_code_filter=[]
                                  'trading_land', 'trading_house', 'trading_car', 'building_date',
                                  'trading_date', 'total_price', 'car_price', 'is_presale', 'house_type']]
 
-    all_buy_df_new.to_csv('house_data.csv', encoding='utf-8-sig')
+    all_buy_df_new.to_csv(result_path + 'house_data.csv', encoding='utf-8-sig', index=False)
+    print(f"Success write data to {result_path + 'house_data.csv'}")

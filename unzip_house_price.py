@@ -3,7 +3,7 @@ import zipfile
 import os
 
 
-def unzip_data(zip_dir_path, target_path):
+def unzip_house_price_data(zip_dir_path, target_path):
     # zip_dir_path = "data\\zip_data\\"
     # target_path = "data\\house_price_xls\\"
 
@@ -24,4 +24,4 @@ def unzip_data(zip_dir_path, target_path):
 
 
 if __name__ == '__main':
-    unzip_data("data\\zip_data\\", "data\\house_price_xls\\")
+    unzip_house_price_data("data\\zip_data\\", "data\\house_price_xls\\")
