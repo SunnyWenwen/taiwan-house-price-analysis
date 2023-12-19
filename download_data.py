@@ -2,13 +2,53 @@ import datetime
 import os
 
 import requests
-import PyPDF2
 
 from para import city_code_dict
 
 
-def download_income_pdf_data_from_gov_web(save_income_path, start_year=101,
-                                          city='all'):  # save_income_path = 'data/income'
+def download_house_price_data(save_zip_file_path, start_year=101):
+    """
+    Download house price data from gov web.
+    The result is zip file.
+    :param save_zip_file_path: zip data save path
+    :param start_year: The year the download started
+    :return:
+    """
+    # save_zip_file_path= "data\\zip_data"
+
+    if not os.path.isdir(save_zip_file_path):
+        os.makedirs(save_zip_file_path, exist_ok=True)
+
+    # start download raw data from gov web
+    today_year = datetime.datetime.today().year - 1911
+    season_list = ['S' + str(i) for i in range(1, 5)]
+    year_list = list(str(x) for x in range(start_year, today_year + 1))
+
+    for year in year_list:
+        for season in season_list:
+            filename = f"{year}_{season}"
+            print(f"Start download {filename}")
+            response = requests.get(
+                f"https://plvr.land.moi.gov.tw/DownloadSeason?season={year}{season}&type=zip&fileName=lvr_landxls.zip")
+            if response.ok:
+                with open(f'{save_zip_file_path}\\{filename}.zip', 'wb') as file:
+                    file.write(response.content)
+                    file.close()
+                print(f"Success download {filename}")
+            else:
+                print(f"Error in download {filename}")
+
+
+def download_income_data(save_income_path, start_year=101, city='all'):  # save_income_path = 'data/income'
+    """
+    download income data from gov web
+    The Url before and after 109 year is different
+    The result is pdf
+    :param save_income_path: pdf data save path
+    :param start_year: The year the download started
+    :param city: Whether to download only some city data
+    :return:
+    """
     today_year = datetime.datetime.today().year - 1911
     year_list = list(str(x) for x in range(start_year, today_year + 1))
     for tmp_year in year_list:  # tmp_year = 109
@@ -36,11 +76,19 @@ def download_income_pdf_data_from_gov_web(save_income_path, start_year=101,
                 print(f"Fail to download {city_code_dict[tmp_city_code]} {tmp_year} year's income data ")
 
 
-# reader = PyPDF2.PdfReader('sample.pdf')
-# print(reader.pages[0].extract_text())
-
-
 if __name__ == '__main__':
+    # Test download house price data
+    response = requests.get(
+        f"https://plvr.land.moi.gov.tw/DownloadSeason?season=110S4&type=zip&fileName=lvr_landxls.zip")
+    # [200] is success
+    if response.ok:
+        print('Test download is Success')
+    else:
+        raise BaseException('Test download is failed')
+    # Start download house price data
+    download_house_price_data("data\\zip_data")
+
+    # Test download income data
     # url1: data start from 109 year
     test_year = 109
     test_city = 'O'
@@ -61,4 +109,5 @@ if __name__ == '__main__':
         raise BaseException('Url2 test download is failed')
 
     # download_income_pdf_data_from_gov_web("data/income", 106, ['O'])
-    download_income_pdf_data_from_gov_web("data/income", 101, 'all')
+    # Start download house price data
+    download_income_data("data/income", 101, 'all')
