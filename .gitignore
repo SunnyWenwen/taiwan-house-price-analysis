@@ -6,3 +6,5 @@ data/
 idea/
 .idea/
 *.Rproj
+__pycache__/
+backup/
