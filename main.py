@@ -9,8 +9,8 @@ result_path = "data/result/"  # path for save processed data
 zip_dir_path = "data/zip_data/"  # zip file location
 house_price_data_path = "data/house_price_xls/"  # xls(unzip) file location
 income_data_path = "data/income/"
-start_year = 105  # The year start download
-city_code_filter = ['o', 'j', 'k']  # city code, mapping table can see 'doc/縣市代碼'
+start_year = 105  # The year start download, the earliest year is 101
+city_code_filter = ['o', 'j', 'k']  # city code, mapping table can see 'doc/縣市代碼',use [] can download all city
 
 if __name__ == '__main__':
     # download data

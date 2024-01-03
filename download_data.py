@@ -15,7 +15,7 @@ def download_house_price_data(save_zip_file_path, start_year=101):
     :return:
     """
     # save_zip_file_path= "data\\zip_data"
-
+    print(f"Start download House Price Data")
     if not os.path.isdir(save_zip_file_path):
         os.makedirs(save_zip_file_path, exist_ok=True)
 
@@ -27,19 +27,20 @@ def download_house_price_data(save_zip_file_path, start_year=101):
     for year in year_list:
         for season in season_list:
             filename = f"{year}_{season}"
-            print(f"Start download {filename}")
+            print(f"    Start download {filename}")
             response = requests.get(
                 f"https://plvr.land.moi.gov.tw/DownloadSeason?season={year}{season}&type=zip&fileName=lvr_landxls.zip")
             if response.ok:
                 with open(f'{save_zip_file_path}\\{filename}.zip', 'wb') as file:
                     file.write(response.content)
                     file.close()
-                print(f"Success download {filename}")
+                print(f"    Success download {filename}")
             else:
-                print(f"Error in download {filename}")
+                print(f"    Error in download {filename}")
+    print(f"Complete download House Price Data")
 
 
-def download_income_data(save_income_path, start_year=101, city='all'):  # save_income_path = 'data/income'
+def download_income_data(save_income_path, start_year=101, city=[]):  # save_income_path = 'data/income'
     """
     download income data from gov web
     The Url before and after 109 year is different
@@ -49,11 +50,12 @@ def download_income_data(save_income_path, start_year=101, city='all'):  # save_
     :param city: Whether to download only some city data
     :return:
     """
+    print(f"Start download Income Data")
     today_year = datetime.datetime.today().year - 1911
     year_list = list(str(x) for x in range(start_year, today_year + 1))
     for tmp_year in year_list:  # tmp_year = 109
-        print(f'Start download {tmp_year} data')
-        if city != 'all':
+        print(f'    Start download {tmp_year} data')
+        if city:
             city_list = city
         else:
             city_list = list(city_code_dict.keys())
@@ -71,9 +73,11 @@ def download_income_data(save_income_path, start_year=101, city='all'):  # save_
                 tmp_data_path += f"/{tmp_year}_{tmp_city_code}.pdf"
                 with open(tmp_data_path, 'wb') as f:
                     f.write(response.content)
-                print(f"Success download {city_code_dict[tmp_city_code]} {tmp_year} year's income data ")
+                print(f"    Success download {city_code_dict[tmp_city_code]} {tmp_year} year's income data ")
             else:
-                print(f"Fail to download {city_code_dict[tmp_city_code]} {tmp_year} year's income data ")
+                print(f"    Fail to download {city_code_dict[tmp_city_code]} {tmp_year} year's income data ")
+    print(f"Complete download Income Data")
+    print('')
 
 
 if __name__ == '__main__':
@@ -111,3 +115,4 @@ if __name__ == '__main__':
     # download_income_pdf_data_from_gov_web("data/income", 106, ['O'])
     # Start download house price data
     download_income_data("data/income", 101, 'all')
+    print('')

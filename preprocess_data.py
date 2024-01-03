@@ -21,7 +21,7 @@ def preprocess_income_data(income_pdf_data_path, result_path, start_year: int = 
         ['o','j']: 新竹市+新竹縣
     :return: write data to result_path
     """
-
+    print(f"Start Preprocess Income Data")
     # settable parameter
     # house_price_data_path = "data\\house_price_xls\\"
     if not os.path.isdir(result_path):
@@ -36,14 +36,15 @@ def preprocess_income_data(income_pdf_data_path, result_path, start_year: int = 
 
     income_dict_list = []
     for tmp_year in year_list:
+        print(f"    Start read {tmp_year}")
         for tmp_city_code in city_code_filter:  # tmp_city_code = 'O'
             tmp_city_code = tmp_city_code.upper()
             tmp_pdf_path = f'{income_pdf_data_path}/city-{tmp_city_code}/{tmp_year}_{tmp_city_code}.pdf'
 
             if not os.path.isfile(tmp_pdf_path):
-                print(f"{tmp_pdf_path}資料並不存在")
+                print(f"        {tmp_pdf_path}資料並不存在")
                 continue
-            print(f"Start read {tmp_pdf_path}")
+            print(f"        Start read {tmp_pdf_path}")
             all_pdf_page = PyPDF2.PdfReader(tmp_pdf_path).pages
 
             patterns = r'(.*)\n(.*)'
@@ -67,10 +68,12 @@ def preprocess_income_data(income_pdf_data_path, result_path, start_year: int = 
                                 '變異係數': tmp_result[7]
                                 }
                     income_dict_list.append(tmp_dict)
-            print(f"Complete read {tmp_pdf_path}")
+            print(f"        Complete read {tmp_pdf_path}")
+        print(f"    Complete read {tmp_year}")
     summary_df = pd.DataFrame(income_dict_list)
     summary_df.to_csv(result_path + 'income_data.csv', encoding='utf-8-sig', index=False)
     print(f"Success write data to {result_path + 'income_data.csv'}")
+    print('')
 
 
 def preprocess_house_price_data(house_price_data_path, result_path, start_year: int = 101, city_code_filter=[]):
@@ -103,7 +106,7 @@ def preprocess_house_price_data(house_price_data_path, result_path, start_year: 
 
     existing_house_df_list = []
     presale_df_list = []
-
+    print(f"Start Read House Price Data")
     for year in year_list:
         for season in season_list:
             year_season = f"{year}_{season}"
@@ -111,7 +114,7 @@ def preprocess_house_price_data(house_price_data_path, result_path, start_year: 
             house_price_path_sub = house_price_data_path + year_season
 
             if os.path.isdir(house_price_path_sub):
-                print(f"載入-{house_price_path_sub} 的資料")
+                print(f"    載入-{house_price_path_sub} 的資料")
                 all_files = os.listdir(house_price_path_sub)
                 buy_files = [tmp_file for tmp_file in all_files if buy_names in tmp_file]
                 presale_files = [tmp_file for tmp_file in all_files if presale_names in tmp_file]
@@ -135,10 +138,14 @@ def preprocess_house_price_data(house_price_data_path, result_path, start_year: 
                     tmp_df = pd.read_excel(f"{house_price_path_sub}\\{presale_file}")
                     tmp_df.drop(0, axis=0, inplace=True)  # row 0 is English statement, drop it
                     tmp_df['year_season'] = year_season
+                    if presale_file == 'b_lvr_land_b.xls' and '110_S3' in house_price_path_sub:
+                        tmp_df['棟及號'] = ''  # this data have some special str that column, so skip
                     presale_df_list.append(tmp_df)
             else:
-                print(f"{house_price_path_sub}不存在")
+                print(f"    {house_price_path_sub}不存在")
+    print(f"Success Read House Price Data")
 
+    print(f"Start Preprocess House Price Data")
     all_existing_house_df = pd.concat(existing_house_df_list, ignore_index=True)
     all_existing_house_df['is_presale'] = False
     # ['鄉鎮市區', '交易標的', '土地位置建物門牌', '土地移轉總面積平方公尺', '都市土地使用分區', '非都市土地使用分區',
@@ -162,8 +169,8 @@ def preprocess_house_price_data(house_price_data_path, result_path, start_year: 
     # a = all_presale_df[all_presale_df['建案名稱'].apply(lambda x:'恆顧' in str(x))]
 
     all_buy_df = pd.concat([all_existing_house_df, all_presale_df], ignore_index=True)
-
     all_buy_df.to_csv(result_path + 'ori_house_data.csv', encoding='utf-8-sig')
+    # all_buy_df = pd.read_csv(result_path + 'ori_house_data.csv')
 
     # area relate
     all_buy_df['total_land_area'] = all_buy_df['土地移轉總面積平方公尺'].apply(lambda x: float(x) / transfer_para)
@@ -180,6 +187,7 @@ def preprocess_house_price_data(house_price_data_path, result_path, start_year: 
     all_buy_df['address'] = all_buy_df['土地位置建物門牌'].apply(
         lambda x: ''.join(full_width_numbers[i] if i in all_full_width else i for i in x))
     all_buy_df['address'] = all_buy_df['address'].apply(lambda x: x.replace('', ','))
+    all_buy_df['交易標的'] = all_buy_df['交易標的'].apply(str)
     all_buy_df['trading_land'] = all_buy_df['交易標的'].apply(lambda x: '土地' in x)
     all_buy_df['trading_house'] = all_buy_df['交易標的'].apply(lambda x: '建物' in x)
     all_buy_df['trading_car'] = all_buy_df['交易標的'].apply(lambda x: '車位' in x)
@@ -207,23 +215,27 @@ def preprocess_house_price_data(house_price_data_path, result_path, start_year: 
 
     all_buy_df_new.to_csv(result_path + 'house_data.csv', encoding='utf-8-sig', index=False)
     print(f"Success write data to {result_path + 'house_data.csv'}")
+    print('')
 
 
 def unzip_house_price_data(zip_dir_path, target_path):
     # zip_dir_path = "data\\zip_data\\"
     # target_path = "data\\house_price_xls\\"
-
+    print('Start unzip House Price Data')
     if not os.path.isdir(target_path):
         os.makedirs(target_path, exist_ok=True)
 
     all_zip_files = os.listdir(zip_dir_path)
 
     for tmp_zip_file in all_zip_files:  # tmp_zip_file = all_zip_files[0]
-        print(f'Start unzip: {tmp_zip_file}')
+        print(f'    Start unzip: {tmp_zip_file}')
         path_to_zip_file = zip_dir_path + tmp_zip_file
         directory_to_extract_to = target_path + re.match(r"^(.*)\.zip", tmp_zip_file).group(1)
         try:
             with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
                 zip_ref.extractall(directory_to_extract_to)
+            print(f'    Success unzip : {tmp_zip_file}')
         except zipfile.BadZipFile:
             print(f"unzip '{tmp_zip_file}' fail. It should be latest season,so there is no data ")
+    print('Complete unzip House Price Data')
+    print('')
