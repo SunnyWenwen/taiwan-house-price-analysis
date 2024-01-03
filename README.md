@@ -13,7 +13,8 @@ Package: pip install -r requirements.txt
 
 ### 1. Use Python to download and preprocess data
 
-Run main.py to download and preprocess data.
+Run main.py to download and preprocess data. (Also can go to [Link](https://huggingface.co/datasets/SunnyWenwen/taiwan_house_price_data/tree/main) download processed data before 112 years ago.)
+
 
 ### 2. Use R to plot trend chart
 
