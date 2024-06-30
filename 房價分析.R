@@ -3,6 +3,8 @@ library(stringr)
 library(skimr)
 library(ggplot2)
 library(lubridate)
+library(plotly)
+
 
 # 讀取資料
 all_buy_df = read.csv('data/result/house_data.csv',stringsAsFactors = F)
@@ -47,7 +49,7 @@ sub_df =
   mutate(trading_year = as.integer( trading_date/10000))%>%
   mutate(trading_month = as.integer( trading_date/100)%%100)%>%
   mutate(trading_quater = as.integer((trading_month+2)/3)) %>%
-  mutate(trading_year_quater = paste(trading_year,trading_quater)) %>%
+  mutate(trading_year_quater = paste0(trading_year,' Q',trading_quater)) %>%
   mutate(trading_year_quater_plot = trading_year+(trading_quater-1)/4 ) 
   
   #arrange(house_price_per_area)
@@ -57,7 +59,7 @@ sub_df =
 # 決定by甚麼維度Summarize data
 plot_data = 
   sub_df %>%
-  group_by(city,trading_year_quater_plot) %>%
+  group_by(city,trading_year_quater) %>%
   # group_by(city,house_type,trading_year_quater_plot) %>%
   # group_by(city,is_presale,trading_year_quater_plot) %>%
   # group_by(city,is_presale,house_type,trading_year_quater_plot) %>%
@@ -66,12 +68,25 @@ plot_data =
 
 
 # 畫價格趨勢圖
-ggplot(plot_data, aes(x = trading_year_quater_plot, y = m_price, color = city)) +
-  geom_line()
+# ggplot(plot_data, aes(x = trading_year_quater, y = m_price, color = city)) +
+# geom_line()
+plot_ly(plot_data, x = ~trading_year_quater, y = ~m_price, color = ~city, type = 'scatter', mode = 'lines') %>%
+  layout(
+    title = "Year and Quarter 每坪價格趨勢圖",
+    xaxis = list(title = "Year-Quarter"),  # 设置X轴名称
+    yaxis = list(title = "每坪價格(萬)")          # 设置Y轴名称
+  )
 
 # 畫成交量趨勢圖
 ggplot(plot_data, aes(x = trading_year_quater_plot, y = ct, color = city)) +
   geom_line()
+
+plot_ly(plot_data, x = ~trading_year_quater, y = ~ct, color = ~city, type = 'scatter', mode = 'lines')%>%
+  layout(
+    title = "Year and Quarter 交易量 趨勢圖",
+    xaxis = list(title = "Year-Quarter"),  # 设置X轴名称
+    yaxis = list(title = "交易量")          # 设置Y轴名称
+  )
 
 # city is_presale trading_year_quater_plot house_type house_year_stratidied
 

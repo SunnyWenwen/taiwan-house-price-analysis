@@ -3,15 +3,15 @@ library(ggplot2)
 library(plotly)
 
 # 讀取資料
-all_income_df = read.csv('data/result/income_data.csv',stringsAsFactors = F)
+all_income_df = read.csv('data/result/income_data.csv',stringsAsFactors = F)%>%
+  mutate(year = as.character(year))
 
 
 
 # 塞選縣市
 sub_income_df = 
   all_income_df %>%
-  filter(city  %in% c('新竹市'))%>%
-  mutate(year = as.character(year))
+  filter(city  %in% c('新竹市'))
 
 # 留下
 # 前1/5收入的裡
